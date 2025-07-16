@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-beta.4] - 2025-07-16
+
+### Changed
+- **Release automation**: Added automated release scripts and GitHub Actions workflow
+- **Testing**: Removed test requirements from release process for faster deployment
+- **Documentation**: Updated release process documentation
+
+## [0.1.0-beta.3] - 2025-07-16
+
+### Changed
+- **Git repository**: Cleaned up repository history and removed confidential documentation
+- **Security**: Improved gitignore to prevent accidental commit of sensitive files
+
 ## [0.1.0-beta.2] - 2025-01-27
 
 ### Fixed

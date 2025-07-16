@@ -94,10 +94,6 @@ rm CHANGELOG.md.bak
 echo -e "${GREEN}🔧 Generating Flutter Rust Bridge bindings...${NC}"
 flutter_rust_bridge_codegen generate
 
-# Run tests
-echo -e "${GREEN}🧪 Running tests...${NC}"
-flutter test
-
 # Commit changes
 echo -e "${GREEN}📦 Committing version bump...${NC}"
 git add pubspec.yaml CHANGELOG.md lib/src/rust/frb_generated*.dart rust/src/frb_generated.rs

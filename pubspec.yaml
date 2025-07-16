@@ -1,6 +1,6 @@
 name: flutter_quic
 description: "Next-generation networking for Flutter with QUIC protocol. Faster connections, better mobile performance, and HTTP/3 support built on the battle-tested Quinn library."
-version: 0.1.0-beta.3
+version: 0.1.0-beta.4
 homepage: https://github.com/ShankarKakumani/flutter_quic
 repository: https://github.com/ShankarKakumani/flutter_quic
 issue_tracker: https://github.com/ShankarKakumani/flutter_quic/issues
