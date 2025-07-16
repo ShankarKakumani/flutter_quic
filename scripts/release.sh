@@ -33,12 +33,40 @@ CURRENT_VERSION=$(grep "version:" pubspec.yaml | sed 's/version: //' | tr -d ' '
 echo -e "${YELLOW}Current version: $CURRENT_VERSION${NC}"
 echo ""
 
+# Calculate what each bump type would produce
+if [[ $CURRENT_VERSION =~ ([0-9]+)\.([0-9]+)\.([0-9]+)-beta ]]; then
+    MAJOR="${BASH_REMATCH[1]}"
+    MINOR="${BASH_REMATCH[2]}"
+    PATCH="${BASH_REMATCH[3]}"
+    
+    PATCH_VERSION="$MAJOR.$MINOR.$((PATCH + 1))-beta"
+    MINOR_VERSION="$MAJOR.$((MINOR + 1)).0-beta"
+    MAJOR_VERSION="$((MAJOR + 1)).0.0-beta"
+    RELEASE_VERSION="$MAJOR.$MINOR.$PATCH"
+elif [[ $CURRENT_VERSION =~ ([0-9]+)\.([0-9]+)\.([0-9]+)-beta\.([0-9]+) ]]; then
+    # Handle old format (0.1.0-beta.4) 
+    MAJOR="${BASH_REMATCH[1]}"
+    MINOR="${BASH_REMATCH[2]}"
+    PATCH="${BASH_REMATCH[3]}"
+    
+    PATCH_VERSION="$MAJOR.$MINOR.$((PATCH + 1))-beta"
+    MINOR_VERSION="$MAJOR.$((MINOR + 1)).0-beta"
+    MAJOR_VERSION="$((MAJOR + 1)).0.0-beta"
+    RELEASE_VERSION="$MAJOR.$MINOR.$PATCH"
+else
+    # Fallback for unrecognized formats
+    PATCH_VERSION="(format not recognized)"
+    MINOR_VERSION="(format not recognized)"
+    MAJOR_VERSION="(format not recognized)"
+    RELEASE_VERSION="(format not recognized)"
+fi
+
 # Ask for version bump type and suggest new version
 echo -e "${GREEN}Select version bump type:${NC}"
-echo "1) patch (0.1.0-beta → 0.1.1-beta)"
-echo "2) minor (0.1.0-beta → 0.2.0-beta)" 
-echo "3) major (0.1.0-beta → 1.0.0-beta)"
-echo "4) release (0.1.0-beta → 0.1.0)"
+echo "1) patch ($CURRENT_VERSION → $PATCH_VERSION)"
+echo "2) minor ($CURRENT_VERSION → $MINOR_VERSION)" 
+echo "3) major ($CURRENT_VERSION → $MAJOR_VERSION)"
+echo "4) release ($CURRENT_VERSION → $RELEASE_VERSION)"
 echo "5) custom (enter your own version)"
 read -p "Choose (1-5): " bump_type
 
