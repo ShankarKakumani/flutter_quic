@@ -111,15 +111,7 @@ jobs:
       - name: Setup pub credentials
         run: |
           mkdir -p ~/.pub-cache
-          cat <<EOF > ~/.pub-cache/credentials.json
-          {
-            "accessToken": "${{ secrets.PUB_DEV_ACCESS_TOKEN }}",
-            "refreshToken": "${{ secrets.PUB_DEV_REFRESH_TOKEN }}",
-            "tokenEndpoint": "https://accounts.google.com/o/oauth2/token",
-            "scopes": ["openid", "https://www.googleapis.com/auth/userinfo.email"],
-            "expiration": 1234567890000
-          }
-          EOF
+          echo '${{ secrets.PUB_CREDENTIALS }}' > ~/.pub-cache/credentials.json
 
       - name: Publish to pub.dev
         run: |
