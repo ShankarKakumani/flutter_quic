@@ -1,0 +1,26 @@
+# Authors
+
+This file lists the contributors to the Flutter QUIC project.
+
+## Maintainers
+
+- Shankar Kakumani <shankarkakumani@gmail.com>
+
+## Contributors
+
+Contributors are listed in alphabetical order by last name.
+
+<!-- Add contributors here as they make contributions -->
+
+## Acknowledgments
+
+Special thanks to:
+
+- Quinn team for the excellent QUIC implementation in Rust
+- flutter_rust_bridge team for making Rust-Flutter integration possible
+- Flutter team for the amazing framework
+- IETF QUIC Working Group for the protocol specification
+
+---
+
+To add yourself to this list, please include your name and email in your first pull request. 

@@ -1,0 +1,88 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_*.png
+*.iml
+
+# Android
+android/.gradle/
+android/app/debug/
+android/app/profile/
+android/app/release/
+
+# iOS/macOS
+ios/.symlinks/
+ios/Pods/
+ios/Runner.xcworkspace/xcuserdata/
+ios/Runner.xcodeproj/xcuserdata/
+macos/.symlinks/
+macos/Pods/
+macos/Runner.xcworkspace/xcuserdata/
+macos/Runner.xcodeproj/xcuserdata/
+
+# Windows
+windows/flutter/
+windows/CMakeCache.txt
+windows/CMakeFiles/
+
+# Linux  
+linux/flutter/
+linux/CMakeCache.txt
+linux/CMakeFiles/
+
+# Web
+web/build/
+
+# Rust
+rust/target/
+rust/Cargo.lock
+*.pdb
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated files
+# lib/src/rust/frb_generated.dart
+# lib/src/rust/frb_generated.*.dart
+# rust/src/frb_generated.rs
+
+# Logs
+*.log
+
+# Test coverage
+coverage/
+
+# Build artifacts
+*.dylib
+*.so
+*.dll
+*.a
+*.lib
+
+# Development certificates
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx
+
+# Local configuration
+.env
+.env.local
+
+# misc
+.cursor
+doc
+
+example/certs
