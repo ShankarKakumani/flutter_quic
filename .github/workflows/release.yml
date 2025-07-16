@@ -108,15 +108,9 @@ jobs:
             git push origin "v$NEW_VERSION"
           fi
 
-      - name: Setup pub credentials
-        run: |
-          mkdir -p ~/.pub-cache
-          echo '${{ secrets.PUB_CREDENTIALS }}' > ~/.pub-cache/credentials.json
-
       - name: Publish to pub.dev
         run: |
-          flutter pub publish --dry-run
-          flutter pub publish --force
+          dart pub publish --force
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
