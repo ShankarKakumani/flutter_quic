@@ -145,8 +145,7 @@ git add pubspec.yaml CHANGELOG.md
 git commit -m "chore: bump version to $NEW_VERSION
 
 - Updated package version from $CURRENT_VERSION to $NEW_VERSION
-- Updated changelog with release date
-- Regenerated Flutter Rust Bridge bindings"
+- Updated changelog with release date"
 
 # Create tag
 echo -e "${GREEN}🏷️  Creating tag v$NEW_VERSION...${NC}"
