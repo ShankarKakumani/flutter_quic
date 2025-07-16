@@ -164,7 +164,14 @@ rm pubspec.yaml.bak
 # Update changelog
 echo -e "${GREEN}📝 Updating CHANGELOG.md...${NC}"
 DATE=$(date +%Y-%m-%d)
-sed -i.bak "1,/## \[Unreleased\]/s/## \[Unreleased\]/## [Unreleased]\n\n## [$NEW_VERSION] - $DATE/" CHANGELOG.md
+# Add new version entry after the header
+sed -i.bak "/^and this project adheres to/a\\
+\\
+## [$NEW_VERSION] - $DATE\\
+\\
+### Changed\\
+- Version bump from $CURRENT_VERSION to $NEW_VERSION\\
+" CHANGELOG.md
 rm CHANGELOG.md.bak
 
 # Commit changes
