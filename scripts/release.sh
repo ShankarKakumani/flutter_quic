@@ -35,56 +35,66 @@ echo ""
 
 # Ask for version bump type and suggest new version
 echo -e "${GREEN}Select version bump type:${NC}"
-echo "1) patch (0.1.0-beta.4 → 0.1.0-beta.5)"
-echo "2) minor (0.1.0-beta.4 → 0.1.1-beta.1)" 
-echo "3) major (0.1.0-beta.4 → 0.2.0-beta.1)"
-echo "4) prerelease (0.1.0-beta.4 → 0.1.0-beta.5)"
-echo "5) release (0.1.0-beta.4 → 0.1.0)"
-echo "6) custom (enter your own version)"
-read -p "Choose (1-6): " bump_type
+echo "1) patch (0.1.0-beta → 0.1.1-beta)"
+echo "2) minor (0.1.0-beta → 0.2.0-beta)" 
+echo "3) major (0.1.0-beta → 1.0.0-beta)"
+echo "4) release (0.1.0-beta → 0.1.0)"
+echo "5) custom (enter your own version)"
+read -p "Choose (1-5): " bump_type
 
 case $bump_type in
-    1|4) # patch/prerelease - increment beta number
-        if [[ $CURRENT_VERSION =~ ([0-9]+\.[0-9]+\.[0-9]+)-beta\.([0-9]+) ]]; then
-            BASE="${BASH_REMATCH[1]}"
-            BETA_NUM="${BASH_REMATCH[2]}"
-            NEW_BETA=$((BETA_NUM + 1))
-            SUGGESTED_VERSION="$BASE-beta.$NEW_BETA"
+    1) # patch - increment patch number
+        if [[ $CURRENT_VERSION =~ ([0-9]+)\.([0-9]+)\.([0-9]+)-beta ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+            NEW_PATCH=$((PATCH + 1))
+            SUGGESTED_VERSION="$MAJOR.$MINOR.$NEW_PATCH-beta"
+        elif [[ $CURRENT_VERSION =~ ([0-9]+)\.([0-9]+)\.([0-9]+)-beta\.([0-9]+) ]]; then
+            # Handle old format (0.1.0-beta.4) and convert to new format
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+            NEW_PATCH=$((PATCH + 1))
+            SUGGESTED_VERSION="$MAJOR.$MINOR.$NEW_PATCH-beta"
         else
             echo -e "${RED}❌ Current version format not recognized for patch bump${NC}"
             exit 1
         fi
         ;;
-    2) # minor
+    2) # minor - increment minor number, reset patch
         if [[ $CURRENT_VERSION =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
             MAJOR="${BASH_REMATCH[1]}"
             MINOR="${BASH_REMATCH[2]}"
             NEW_MINOR=$((MINOR + 1))
-            SUGGESTED_VERSION="$MAJOR.$NEW_MINOR.0-beta.1"
+            SUGGESTED_VERSION="$MAJOR.$NEW_MINOR.0-beta"
         else
             echo -e "${RED}❌ Current version format not recognized for minor bump${NC}"
             exit 1
         fi
         ;;
-    3) # major
+    3) # major - increment major number, reset minor and patch
         if [[ $CURRENT_VERSION =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
             MAJOR="${BASH_REMATCH[1]}"
             NEW_MAJOR=$((MAJOR + 1))
-            SUGGESTED_VERSION="$NEW_MAJOR.0.0-beta.1"
+            SUGGESTED_VERSION="$NEW_MAJOR.0.0-beta"
         else
             echo -e "${RED}❌ Current version format not recognized for major bump${NC}"
             exit 1
         fi
         ;;
-    5) # release
-        if [[ $CURRENT_VERSION =~ ([0-9]+\.[0-9]+\.[0-9]+)-beta\.[0-9]+ ]]; then
+    4) # release - remove beta suffix
+        if [[ $CURRENT_VERSION =~ ([0-9]+\.[0-9]+\.[0-9]+)-beta ]]; then
+            SUGGESTED_VERSION="${BASH_REMATCH[1]}"
+        elif [[ $CURRENT_VERSION =~ ([0-9]+\.[0-9]+\.[0-9]+)-beta\.([0-9]+) ]]; then
+            # Handle old format (0.1.0-beta.4) and convert to release
             SUGGESTED_VERSION="${BASH_REMATCH[1]}"
         else
             echo -e "${RED}❌ Current version is not a beta version${NC}"
             exit 1
         fi
         ;;
-    6) # custom
+    5) # custom
         SUGGESTED_VERSION=""
         ;;
     *)
@@ -93,8 +103,8 @@ case $bump_type in
         ;;
 esac
 
-if [[ $bump_type == "6" ]]; then
-    read -p "Enter custom version (e.g., 0.1.0-beta.7): " NEW_VERSION
+if [[ $bump_type == "5" ]]; then
+    read -p "Enter custom version (e.g., 0.1.5-beta): " NEW_VERSION
 else
     echo -e "${GREEN}Suggested new version: $SUGGESTED_VERSION${NC}"
     read -p "Press Enter to use suggested version, or type custom version: " custom_input
