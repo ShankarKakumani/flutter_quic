@@ -1,0 +1,150 @@
+name: Release Flutter Package
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate Flutter Rust Bridge bindings
+        run: flutter_rust_bridge_codegen generate
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version and update changelog
+        id: version
+        run: |
+          # Install cider for changelog management
+          dart pub global activate cider
+          
+          # Get current version
+          CURRENT_VERSION=$(grep "version:" pubspec.yaml | sed 's/version: //')
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Determine version bump type
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            BUMP_TYPE="${{ github.event.inputs.version_type }}"
+          else
+            # For tag pushes, extract version from tag
+            TAG_VERSION="${{ github.ref_name }}"
+            NEW_VERSION="${TAG_VERSION#v}"
+            echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "SKIP_BUMP=true" >> $GITHUB_OUTPUT
+          fi
+          
+          if [ "${{ github.event.inputs.version_type }}" != "" ] && [ "$SKIP_BUMP" != "true" ]; then
+            # Update version in pubspec.yaml
+            case $BUMP_TYPE in
+              "major")
+                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{printf "%d.0.0", $1+1}')
+                ;;
+              "minor")
+                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{printf "%d.%d.0", $1, $2+1}')
+                ;;
+              "patch")
+                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')
+                ;;
+              "prerelease")
+                if [[ $CURRENT_VERSION == *"beta"* ]]; then
+                  BETA_NUM=$(echo $CURRENT_VERSION | sed 's/.*beta\.//' | sed 's/+.*//')
+                  NEW_BETA=$((BETA_NUM + 1))
+                  NEW_VERSION=$(echo $CURRENT_VERSION | sed "s/beta\.$BETA_NUM/beta.$NEW_BETA/")
+                else
+                  NEW_VERSION="${CURRENT_VERSION}-beta.1"
+                fi
+                ;;
+            esac
+            
+            echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+            
+            # Update pubspec.yaml
+            sed -i "s/version: $CURRENT_VERSION/version: $NEW_VERSION/" pubspec.yaml
+            
+            # Update changelog
+            cider bump $BUMP_TYPE
+            
+            # Commit changes
+            git add pubspec.yaml CHANGELOG.md
+            git commit -m "chore: bump version to $NEW_VERSION"
+            git tag "v$NEW_VERSION"
+            git push origin main
+            git push origin "v$NEW_VERSION"
+          fi
+
+      - name: Setup pub credentials
+        run: |
+          mkdir -p ~/.pub-cache
+          cat <<EOF > ~/.pub-cache/credentials.json
+          {
+            "accessToken": "${{ secrets.PUB_DEV_ACCESS_TOKEN }}",
+            "refreshToken": "${{ secrets.PUB_DEV_REFRESH_TOKEN }}",
+            "tokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+            "scopes": ["openid", "https://www.googleapis.com/auth/userinfo.email"],
+            "expiration": 1234567890000
+          }
+          EOF
+
+      - name: Publish to pub.dev
+        run: |
+          flutter pub publish --dry-run
+          flutter pub publish --force
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.NEW_VERSION }}
+          release_name: Release v${{ steps.version.outputs.NEW_VERSION }}
+          body: |
+            ## Changes in v${{ steps.version.outputs.NEW_VERSION }}
+            
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed changes.
+            
+            ### Installation
+            ```yaml
+            dependencies:
+              flutter_quic: ^${{ steps.version.outputs.NEW_VERSION }}
+            ```
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.NEW_VERSION, 'beta') }} 
