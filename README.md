@@ -73,7 +73,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_quic: ^0.1.0-beta.3
+  flutter_quic: ^1.0.0
 ```
 
 Initialize in your app:
