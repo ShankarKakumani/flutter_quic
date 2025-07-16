@@ -139,13 +139,9 @@ DATE=$(date +%Y-%m-%d)
 sed -i.bak "1,/## \[Unreleased\]/s/## \[Unreleased\]/## [Unreleased]\n\n## [$NEW_VERSION] - $DATE/" CHANGELOG.md
 rm CHANGELOG.md.bak
 
-# Generate Flutter Rust Bridge bindings
-echo -e "${GREEN}🔧 Generating Flutter Rust Bridge bindings...${NC}"
-flutter_rust_bridge_codegen generate
-
 # Commit changes
 echo -e "${GREEN}📦 Committing version bump...${NC}"
-git add pubspec.yaml CHANGELOG.md lib/src/rust/frb_generated*.dart rust/src/frb_generated.rs
+git add pubspec.yaml CHANGELOG.md
 git commit -m "chore: bump version to $NEW_VERSION
 
 - Updated package version from $CURRENT_VERSION to $NEW_VERSION
