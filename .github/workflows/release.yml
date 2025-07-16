@@ -4,18 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  workflow_dispatch:
-    inputs:
-      version_type:
-        description: 'Version bump type'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-          - prerelease
 
 jobs:
   release:
@@ -40,73 +28,19 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate Flutter Rust Bridge bindings
-        run: flutter_rust_bridge_codegen generate
-
       - name: Setup Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump version and update changelog
+      - name: Extract version from tag
         id: version
         run: |
-          # Install cider for changelog management
-          dart pub global activate cider
-          
-          # Get current version
-          CURRENT_VERSION=$(grep "version:" pubspec.yaml | sed 's/version: //')
-          echo "Current version: $CURRENT_VERSION"
-          
-          # Determine version bump type
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            BUMP_TYPE="${{ github.event.inputs.version_type }}"
-          else
-            # For tag pushes, extract version from tag
-            TAG_VERSION="${{ github.ref_name }}"
-            NEW_VERSION="${TAG_VERSION#v}"
-            echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
-            echo "SKIP_BUMP=true" >> $GITHUB_OUTPUT
-          fi
-          
-          if [ "${{ github.event.inputs.version_type }}" != "" ] && [ "$SKIP_BUMP" != "true" ]; then
-            # Update version in pubspec.yaml
-            case $BUMP_TYPE in
-              "major")
-                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{printf "%d.0.0", $1+1}')
-                ;;
-              "minor")
-                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{printf "%d.%d.0", $1, $2+1}')
-                ;;
-              "patch")
-                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')
-                ;;
-              "prerelease")
-                if [[ $CURRENT_VERSION == *"beta"* ]]; then
-                  BETA_NUM=$(echo $CURRENT_VERSION | sed 's/.*beta\.//' | sed 's/+.*//')
-                  NEW_BETA=$((BETA_NUM + 1))
-                  NEW_VERSION=$(echo $CURRENT_VERSION | sed "s/beta\.$BETA_NUM/beta.$NEW_BETA/")
-                else
-                  NEW_VERSION="${CURRENT_VERSION}-beta.1"
-                fi
-                ;;
-            esac
-            
-            echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
-            
-            # Update pubspec.yaml
-            sed -i "s/version: $CURRENT_VERSION/version: $NEW_VERSION/" pubspec.yaml
-            
-            # Update changelog
-            cider bump $BUMP_TYPE
-            
-            # Commit changes
-            git add pubspec.yaml CHANGELOG.md
-            git commit -m "chore: bump version to $NEW_VERSION"
-            git tag "v$NEW_VERSION"
-            git push origin main
-            git push origin "v$NEW_VERSION"
-          fi
+          # Extract version from git tag (remove 'v' prefix)
+          TAG_VERSION="${{ github.ref_name }}"
+          NEW_VERSION="${TAG_VERSION#v}"
+          echo "Publishing version: $NEW_VERSION"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Publish to pub.dev
         run: |
